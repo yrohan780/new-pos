@@ -2,7 +2,7 @@ console.log("Service Worker script loaded");
 const CACHE_NAME = "my-cache-v3";
 const urlsToCache = [
   "/",
-  "/index.html",
+  "/build/index.html",
   "/js/Form.js",
   "/css/MyForm.css",
   "/css/App.css",
