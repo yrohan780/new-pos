@@ -6,6 +6,7 @@ const urlsToCache = [
   "/static/js/Form.js",
   "/static/css/MyForm.css",
   "/static/css/App.css",
+  
 ];
 
 self.addEventListener("install", (event) => {
