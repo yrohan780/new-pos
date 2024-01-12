@@ -17,23 +17,21 @@ self.addEventListener("install", (event) => {
 
       // Use Promise.all to handle multiple add requests
       return Promise.all(
-        urlsToCache.map((url) => {
+        urlsToCache.map(async (url) => {
           // Fetch each resource and add to cache
-          return fetch(url)
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(
-                  `Failed to fetch: ${url}. Status: ${response.status}`
-                );
-              }
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(
+                `Failed to fetch: ${url}. Status: ${response.status}`
+              );
+            }
 
-              const responseToCache = response.clone();
-              return cache.put(url, responseToCache);
-            })
-            .catch((error) => {
-              console.error(`Failed to fetch: ${url}`, error);
-              // Consider providing a fallback response or handling the error in a different way
-            });
+            const responseToCache = response.clone();
+            return await cache.put(url, responseToCache);
+          } catch (error) {
+            console.error(`Failed to fetch: ${url}`, error);
+          }
         })
       );
     })
