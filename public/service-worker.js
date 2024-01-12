@@ -3,11 +3,11 @@ const CACHE_NAME = "my-cache-v8"; // Increment the version to force cache update
 const urlsToCache = [
   "/",
   "/build/index.html",
-  "/js/index.js",
-  "/js/App.js",
-  "/js/Form.js",
-  "/css/MyForm.css",
-  "/css/App.css",
+  "/static/js/index.js",
+  "/static/js/App.js",
+  "/static/js/Form.js",
+  "/static/css/MyForm.css",
+  "/static/css/App.css",
 ];
 
 self.addEventListener("install", (event) => {
