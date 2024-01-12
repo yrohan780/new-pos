@@ -3,6 +3,8 @@ const CACHE_NAME = "my-cache-v6"; // Increment the version to force cache update
 const urlsToCache = [
   "/",
   "/build/index.html",
+  "/static/js/index.js",
+  "/static/js/App.js",
   "/static/js/Form.js",
   "/static/css/MyForm.css",
   "/static/css/App.css",
