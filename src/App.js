@@ -6,7 +6,9 @@ function App() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./public/service-worker.js")
+        .register(
+          "https://superlative-genie-d09955.netlify.app/public/service-worker.js"
+        )
         .then((registration) => {
           console.log(
             "Service Worker registered with scope:",
