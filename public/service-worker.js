@@ -1,5 +1,5 @@
 console.log("Service Worker script loaded");
-const CACHE_NAME = "my-cache-v6"; // Increment the version to force cache update
+const CACHE_NAME = "my-cache-v8"; // Increment the version to force cache update
 const urlsToCache = [
   "/",
   "/build/index.html",
@@ -21,19 +21,18 @@ self.addEventListener("install", (event) => {
           // Fetch each resource and add to cache
           return fetch(url)
             .then((response) => {
-              // Check if the request was successful
               if (!response.ok) {
-                throw new Error(`Failed to fetch: ${url}`);
+                throw new Error(
+                  `Failed to fetch: ${url}. Status: ${response.status}`
+                );
               }
 
-              // Clone the response because it's a stream and can only be consumed once
               const responseToCache = response.clone();
-
-              // Add the response to the cache
               return cache.put(url, responseToCache);
             })
             .catch((error) => {
               console.error(`Failed to fetch: ${url}`, error);
+              // Consider providing a fallback response or handling the error in a different way
             });
         })
       );
