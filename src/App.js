@@ -7,7 +7,7 @@ function App() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register(
-          "https://superlative-genie-d09955.netlify.app/public/service-worker.js"
+          "/build/service-worker.js"
         )
         .then((registration) => {
           console.log(
