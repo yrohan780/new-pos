@@ -6,7 +6,6 @@ const urlsToCache = [
   "/static/js/Form.js",
   "/static/css/MyForm.css",
   "/static/css/App.css",
-  
 ];
 
 self.addEventListener("install", (event) => {
@@ -30,20 +29,23 @@ self.addEventListener("fetch", (event) => {
 
       const fetchRequest = event.request.clone();
 
-      return fetch(fetchRequest).then((response) => {
-        if (!response || response.status !== 200 || response.type !== "basic") {
-          return response;
-        }
+      return fetch(fetchRequest)
+        .then((response) => {
+          if (
+            !response ||
+            response.status !== 200 ||
+            response.type !== "basic"
+          ) {
+            console.error("Failed to fetch:", event.request.url, response);
+            return response;
+          }
 
-        // Clone the response because it's a stream and can only be consumed once
-        const responseToCache = response.clone();
-
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+          // Continue with caching logic
+        })
+        .catch((error) => {
+          console.error("Fetch error:", error);
+          // Handle fetch errors, if needed
         });
-
-        return response;
-      });
     })
   );
 });
