@@ -3,9 +3,9 @@ const CACHE_NAME = "my-cache-v6"; // Increment the version to force cache update
 const urlsToCache = [
   "/",
   "/build/index.html",
-  "/js/Form.js",
-  "/css/MyForm.css",
-  "/css/App.css",
+  "/static/js/Form.js",
+  "/static/css/MyForm.css",
+  "/static/css/App.css",
 ];
 
 self.addEventListener("install", (event) => {
