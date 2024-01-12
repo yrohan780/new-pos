@@ -6,9 +6,7 @@ function App() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register(
-          "/build/service-worker.js"
-        )
+        .register("/service-worker.js", { scope: "/" })
         .then((registration) => {
           console.log(
             "Service Worker registered with scope:",
