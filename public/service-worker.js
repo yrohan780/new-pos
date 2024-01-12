@@ -2,10 +2,10 @@ console.log("Service Worker script loaded");
 const CACHE_NAME = "my-cache-v3";
 const urlsToCache = [
   "/",
-  "/build/index.html",
-  "/js/Form.js",
-  "/css/MyForm.css",
-  "/css/App.css",
+  "/index.html",
+  "/static/js/Form.js",
+  "/static/css/MyForm.css",
+  "/static/css/App.css",
 ];
 
 self.addEventListener("install", (event) => {
