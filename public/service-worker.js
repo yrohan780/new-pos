@@ -1,11 +1,11 @@
 console.log("Service Worker script loaded");
-const CACHE_NAME = "my-cache-v5";
+const CACHE_NAME = "my-cache-v6"; // Increment the version to force cache update
 const urlsToCache = [
   "/",
-  "/index.html",
-  "/static/js/Form.js",
-  "/static/css/MyForm.css",
-  "/static/css/App.css",
+  "/build/index.html",
+  "/js/Form.js",
+  "/css/MyForm.css",
+  "/css/App.css",
 ];
 
 self.addEventListener("install", (event) => {
@@ -13,7 +13,28 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Service Worker installed");
 
-      return cache.addAll(urlsToCache);
+      // Use Promise.all to handle multiple add requests
+      return Promise.all(
+        urlsToCache.map((url) => {
+          // Fetch each resource and add to cache
+          return fetch(url)
+            .then((response) => {
+              // Check if the request was successful
+              if (!response.ok) {
+                throw new Error(`Failed to fetch: ${url}`);
+              }
+
+              // Clone the response because it's a stream and can only be consumed once
+              const responseToCache = response.clone();
+
+              // Add the response to the cache
+              return cache.put(url, responseToCache);
+            })
+            .catch((error) => {
+              console.error(`Failed to fetch: ${url}`, error);
+            });
+        })
+      );
     })
   );
 });
@@ -21,31 +42,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      if (response) {
-        console.log("Service Worker installed");
-
-        return response;
-      }
-
-      const fetchRequest = event.request.clone();
-
-      return fetch(fetchRequest)
-        .then((response) => {
-          if (
-            !response ||
-            response.status !== 200 ||
-            response.type !== "basic"
-          ) {
-            console.error("Failed to fetch:", event.request.url, response);
-            return response;
-          }
-
-          // Continue with caching logic
-        })
-        .catch((error) => {
-          console.error("Fetch error:", error);
-          // Handle fetch errors, if needed
-        });
+      return response || fetch(event.request);
     })
   );
 });
