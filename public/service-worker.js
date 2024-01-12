@@ -1,5 +1,5 @@
 console.log("Service Worker script loaded");
-const CACHE_NAME = "my-cache-v3";
+const CACHE_NAME = "my-cache-v5";
 const urlsToCache = [
   "/",
   "/index.html",
