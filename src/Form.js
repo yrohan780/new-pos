@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./MyForm.css";
 import { Link } from "react-router-dom";
 let flag_click = "0";
-const MyForm = () => {
+const Form = () => {
   const [db, setDb] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
 
@@ -173,4 +173,4 @@ const MyForm = () => {
   );
 };
 
-export default MyForm;
+export default Form;
