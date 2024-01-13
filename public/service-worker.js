@@ -7,7 +7,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       // List of resources to cache
-      const resourcesToCache = [offlineUrl];
+      const resourcesToCache = [offlineUrls];
 
       // Use Promise.all to handle multiple add operations
       return Promise.all(
