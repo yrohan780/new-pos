@@ -1,13 +1,13 @@
 // service-worker.js
 
 const cacheName = "offline-cache";
-const offlineUrl = "offline.html"; // Replace with the actual path to your HTML file
+const offlineUrls = ["/", "/form", "/offline.html", "/index.html"]; // Replace with the actual path to your HTML file
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       // List of resources to cache
-      const resourcesToCache = [offlineUrl, "/index.html", "/", "/form"];
+      const resourcesToCache = [offlineUrl];
 
       // Use Promise.all to handle multiple add operations
       return Promise.all(
