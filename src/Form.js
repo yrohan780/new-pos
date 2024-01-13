@@ -1,162 +1,129 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import "./MyForm.css";
 
 const MyForm = () => {
-  const initialFormData = {
-    name: "",
-    email: "",
-    phoneNo: "",
-    city: "",
-    country: "",
-  };
-
-  const [formData, setFormData] = useState(() => {
-    const storedFormData = localStorage.getItem("formData");
-    return storedFormData ? JSON.parse(storedFormData) : initialFormData;
-  });
-
-  const [errors, setErrors] = useState({});
+  const [db, setDb] = useState(null);
+  const [formData, setFormData] = useState({ name: "", email: "" });
 
   useEffect(() => {
-    localStorage.setItem("formData", JSON.stringify(formData));
-  }, [formData]);
+    const initIndexedDB = async () => {
+      const request = indexedDB.open("OfflineFormDataDB", 1);
+      let database;
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+      request.onupgradeneeded = (event) => {
+        database = event.target.result;
+        database.createObjectStore("offlineFormData", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+      };
 
-    // Clear validation error on input change
-    setErrors({
-      ...errors,
-      [e.target.name]: "",
-    });
-  };
+      request.onsuccess = (event) => {
+        setDb(event.target.result);
+      };
+    };
 
-  // Function to handle offline storage
-  const storeOfflineData = () => {
-    const storedOfflineData =
-      JSON.parse(localStorage.getItem("offlineData")) || [];
-    storedOfflineData.push(formData);
-    localStorage.setItem("offlineData", JSON.stringify(storedOfflineData));
-  };
+    initIndexedDB();
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validate form fields
-    const validationErrors = {};
-    if (!formData.name.trim()) {
-      validationErrors.name = "Name is required";
-    }
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      validationErrors.email = "Invalid email address";
-    }
-    if (!/^\d{10}$/.test(formData.phoneNo)) {
-      validationErrors.phoneNo = "Invalid phone number";
-    }
-    if (!formData.city.trim()) {
-      validationErrors.city = "City is required";
-    }
-    if (!formData.country.trim()) {
-      validationErrors.country = "Country is required";
-    }
-
-    // If there are validation errors, update the state and return
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    // If no validation errors, send data to API
+  const syncData = async (formData) => {
     try {
-      const response = await axios.post(
-        "http://192.168.1.28:5000/formdata",
-        formData
+      const response = await fetch(
+        "https://vedicastrologyforum.com/mt/sync.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
       );
-      console.log("API Response:", response.data);
 
-      // Optionally, you can clear the form data after successful submission
-      setFormData(initialFormData);
+      const data = await response.json();
 
-      // Also, you may want to handle any additional logic or UI updates here
+      console.log("Data synced:", data);
+
+      const transaction = db.transaction(["offlineFormData"], "readwrite");
+      const objectStore = transaction.objectStore("offlineFormData");
+      objectStore.delete(formData.id);
+
+      console.log("Data removed from IndexedDB");
     } catch (error) {
-      console.error("API Error:", error);
-
-      // If the internet is off, store the data in local storage
-      if (!navigator.onLine) {
-        storeOfflineData();
-      }
-
-      // Handle errors, e.g., show an error message to the user
+      console.error("Error syncing data:", error);
     }
   };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const transaction = db.transaction(["offlineFormData"], "readwrite");
+    const objectStore = transaction.objectStore("offlineFormData");
+    const addRequest = objectStore.add({
+      name: formData.name,
+      email: formData.email,
+    });
+
+    addRequest.onsuccess = (event) => {
+      const newFormData = { id: event.target.result, ...formData };
+
+      const isOnline = navigator.onLine;
+
+      if (isOnline) {
+        syncData(newFormData);
+        console.log(newFormData);
+      }
+    };
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const isOnline = navigator.onLine;
+
+      if (isOnline && db) {
+        const transaction = db.transaction(["offlineFormData"], "readonly");
+        const objectStore = transaction.objectStore("offlineFormData");
+        const request = objectStore.openCursor();
+
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+
+          if (cursor) {
+            const formData = { id: cursor.value.id, ...cursor.value };
+            syncData(formData);
+          }
+        };
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [db]);
 
   return (
     <div className="form-container">
-      <form onSubmit={handleSubmit}>
-        <label>
-          Name:
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-          />
-          <span className="error">{errors.name}</span>
-        </label>
+      <form id="offlineForm" onSubmit={handleSubmit}>
+        <label htmlFor="name">Name:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
+        <br />
 
-        <label>
-          Email:
-          <input
-            type="text"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <span className="error">{errors.email}</span>
-        </label>
+        <label htmlFor="email">Email:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+        <br />
 
-        <label>
-          Phone:
-          <input
-            type="text"
-            name="phoneNo"
-            value={formData.phoneNo}
-            onChange={handleChange}
-          />
-          <span className="error">{errors.phoneNo}</span>
-        </label>
-
-        <label>
-          City:
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-          />
-          <span className="error">{errors.city}</span>
-        </label>
-
-        <label>
-          Country:
-          <select
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-          >
-            <option value="">Select Country</option>
-            <option value="USA">United States</option>
-            <option value="CAN">Canada</option>
-            {/* Add more countries as needed */}
-          </select>
-          <span className="error">{errors.country}</span>
-        </label>
-
-        <button type="button">Submit</button>
+        <button type="submit">Submit</button>
       </form>
     </div>
   );
