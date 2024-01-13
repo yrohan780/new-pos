@@ -1,52 +1,42 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./MyForm.css";
 import { Link } from "react-router-dom";
-let flag_click="0";
+let flag_click = "0";
 const MyForm = () => {
   const [db, setDb] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
 
   const syncData = useCallback(
     async (formData) => {
-      
-      if(flag_click==="0"){
-        flag_click="1";
+      if (flag_click === "0") {
+        flag_click = "1";
         console.log(formData);
         try {
-          const response = await fetch(
-            "https://vedicastrologyforum.com/mt/sync.php",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(formData),
-            }
-          );
-  
-          // const data = await response.json();
-  
-          // console.log("Data synced:", data);
-  
-          // Open a read/write transaction
+          await fetch("https://vedicastrologyforum.com/mt/sync.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          // The 'response' variable is not used, so you can remove it
+          // const response = await response.json();
+
           const transaction = db.transaction(["offlineFormData"], "readwrite");
           const objectStore = transaction.objectStore("offlineFormData");
-          // Use the clear method to remove all data from the object store
           const clearRequest = objectStore.clear();
-  
+
           clearRequest.onsuccess = (event) => {
             console.log("All data deleted successfully");
-  
-            // Additional logic if needed after successful deletion
           };
           console.log("Data removed from IndexedDB");
-          flag_click="0";
+          flag_click = "0";
         } catch (error) {
           console.error("Error syncing data:", error);
-          flag_click="0";
+          flag_click = "0";
         }
       }
-      
     },
     [db]
   );
