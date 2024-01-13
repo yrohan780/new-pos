@@ -15,6 +15,7 @@ form {
 label {
   display: block;
   margin-bottom: 10px;
+  font-family: 700 !important;
 }
 
 input {
@@ -30,12 +31,13 @@ input {
 }
 
 button {
-  background-color: #4caf50;
+  background-color: #292c29;
   color: white;
   padding: 10px;
   border: none;
   cursor: pointer;
   width: 100%;
+  border-radius: 6px !important;
 }
 
 input,
@@ -43,4 +45,50 @@ select {
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;
+  background-color: #fbfbfb;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px !important;
+  height: 45px;
+  outline: none;
+  color: #292c29;
+}
+
+.homeCOntaienr {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.Offline_Pos h1 {
+  color: #ed1c24;
+  font-weight: 700;
+}
+
+.postxt {
+  background-color: #ed1c24;
+  color: #ffffff;
+  padding: 0.3rem 0.7rem;
+}
+
+.Offline_Pos h5 {
+  color: rgb(4, 7, 7);
+}
+
+.Offline_Pos p {
+  font-size: 16px;
+  color: #181818;
+  font-weight: 500;
+  line-height: 1.5rem;
+  letter-spacing: 1px;
+  margin-bottom: 0;
+}
+
+.navbar {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
 }

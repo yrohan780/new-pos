@@ -1,37 +1,52 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./MyForm.css";
 import { Link } from "react-router-dom";
-
+let flag_click="0";
 const MyForm = () => {
   const [db, setDb] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
 
   const syncData = useCallback(
     async (formData) => {
-      try {
-        const response = await fetch(
-          "https://vedicastrologyforum.com/mt/sync.php",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formData),
-          }
-        );
-
-        const data = await response.json();
-
-        console.log("Data synced:", data);
-
-        const transaction = db.transaction(["offlineFormData"], "readwrite");
-        const objectStore = transaction.objectStore("offlineFormData");
-        objectStore.delete(formData.id);
-
-        console.log("Data removed from IndexedDB");
-      } catch (error) {
-        console.error("Error syncing data:", error);
+      
+      if(flag_click==="0"){
+        flag_click="1";
+        console.log(formData);
+        try {
+          const response = await fetch(
+            "https://vedicastrologyforum.com/mt/sync.php",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            }
+          );
+  
+          // const data = await response.json();
+  
+          // console.log("Data synced:", data);
+  
+          // Open a read/write transaction
+          const transaction = db.transaction(["offlineFormData"], "readwrite");
+          const objectStore = transaction.objectStore("offlineFormData");
+          // Use the clear method to remove all data from the object store
+          const clearRequest = objectStore.clear();
+  
+          clearRequest.onsuccess = (event) => {
+            console.log("All data deleted successfully");
+  
+            // Additional logic if needed after successful deletion
+          };
+          console.log("Data removed from IndexedDB");
+          flag_click="0";
+        } catch (error) {
+          console.error("Error syncing data:", error);
+          flag_click="0";
+        }
       }
+      
     },
     [db]
   );
@@ -97,38 +112,51 @@ const MyForm = () => {
 
       if (isOnline) {
         syncData(newFormData);
-        console.log(newFormData);
       }
     };
+    setFormData({
+      name: "",
+      email: "",
+    });
   };
 
   return (
-    <>
-      <nav class="navbar fixed-top navbar-dark bg-dark">
-        <div class="container-fluid">
-          <Link class="navbar-brand" to="/">
+    <div className="formCOntianer">
+      <nav className="navbar fixed-top navbar-dark bg-dark">
+        <div className="container-md">
+          <Link className="navbar-brand" to="/">
             Offline POS
           </Link>
-          <Link class="navbar-brand" to="/form">
+          <Link className="navbar-brand" to="/form">
             Form
           </Link>
         </div>
       </nav>
       <div className="form-container">
         <form id="offlineForm" onSubmit={handleSubmit}>
-          <label htmlFor="name">Name:</label>
+          <label htmlFor="name" data-aos="fade-right">
+            Name:
+          </label>
           <input
+            data-aos="fade-right"
+            data-aos-delay="100"
             type="text"
             id="name"
             name="name"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="mb-2"
+            placeholder="Enter Your Name"
           />
           <br />
 
-          <label htmlFor="email">Email:</label>
+          <label htmlFor="email" data-aos="fade-right" data-aos-delay="200">
+            Email:
+          </label>
           <input
+            data-aos="fade-right"
+            data-aos-delay="300"
             type="email"
             id="email"
             name="email"
@@ -137,13 +165,21 @@ const MyForm = () => {
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
+            placeholder="Enter Your Email"
           />
           <br />
 
-          <button type="submit">Submit</button>
+          <button
+            data-aos="fade-right"
+            data-aos-delay="400"
+            type="submit"
+            className="mt-4"
+          >
+            Submit
+          </button>
         </form>
       </div>
-    </>
+    </div>
   );
 };
 
