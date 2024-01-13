@@ -7,10 +7,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       // List of resources to cache
-      const resourcesToCache = [
-        offlineUrl,
-        // Add paths to other assets you want to cache (stylesheets, scripts, images, etc.)
-      ];
+      const resourcesToCache = [offlineUrl, "/index.html"];
 
       // Use Promise.all to handle multiple add operations
       return Promise.all(
