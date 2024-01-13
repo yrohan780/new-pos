@@ -2,6 +2,10 @@
 import React from "react";
 import "./App.css";
 import MyForm from "./Form";
+import Home from "./Home";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 function App() {
   // useEffect(() => {
@@ -22,7 +26,14 @@ function App() {
 
   return (
     <div className="App">
-      <MyForm />
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/form" element={<MyForm />} />
+          </Routes>
+        </div>
+      </Router>
     </div>
   );
 }

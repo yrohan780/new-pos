@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./MyForm.css";
+import { Link } from "react-router-dom";
 
 const MyForm = () => {
   const [db, setDb] = useState(null);
@@ -102,33 +103,47 @@ const MyForm = () => {
   };
 
   return (
-    <div className="form-container">
-      <form id="offlineForm" onSubmit={handleSubmit}>
-        <label htmlFor="name">Name:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          required
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-        <br />
+    <>
+      <nav class="navbar fixed-top navbar-dark bg-dark">
+        <div class="container-fluid">
+          <Link class="navbar-brand" to="/">
+            Offline POS
+          </Link>
+          <Link class="navbar-brand" to="/form">
+            Form
+          </Link>
+        </div>
+      </nav>
+      <div className="form-container">
+        <form id="offlineForm" onSubmit={handleSubmit}>
+          <label htmlFor="name">Name:</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <br />
 
-        <label htmlFor="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        />
-        <br />
+          <label htmlFor="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+          <br />
 
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </>
   );
 };
 
