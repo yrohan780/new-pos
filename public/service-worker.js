@@ -1,36 +1,29 @@
-console.log("Service Worker script loaded");
-const CACHE_NAME = "my-cache-v8"; // Increment the version to force cache update
-const urlsToCache = [
-  "/",
-  "/build/index.html",
-  "/static/js/index.js",
-  "/static/js/App.js",
-  "/static/js/Form.js",
-  "/static/css/MyForm.css",
-  "/static/css/App.css",
-];
+// service-worker.js
+
+const cacheName = "offline-cache";
+const offlineUrl = "offline.html"; // Replace with the actual path to your HTML file
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("Service Worker installed");
+    caches.open(cacheName).then((cache) => {
+      // List of resources to cache
+      const resourcesToCache = [
+        offlineUrl,
+        // Add paths to other assets you want to cache (stylesheets, scripts, images, etc.)
+      ];
 
-      // Use Promise.all to handle multiple add requests
+      // Use Promise.all to handle multiple add operations
       return Promise.all(
-        urlsToCache.map(async (url) => {
-          // Fetch each resource and add to cache
+        resourcesToCache.map(async (resource) => {
           try {
-            const response = await fetch(url);
+            const response = await fetch(resource);
+            // Check if the response is successful (status code 200)
             if (!response.ok) {
-              throw new Error(
-                `Failed to fetch: ${url}. Status: ${response.status}`
-              );
+              throw new Error(`Failed to fetch: ${resource}`);
             }
-
-            const responseToCache = response.clone();
-            return await cache.put(url, responseToCache);
+            return await cache.put(resource, response);
           } catch (error) {
-            console.error(`Failed to fetch: ${url}`, error);
+            console.error(`Caching failed for ${resource}:`, error);
           }
         })
       );
@@ -41,7 +34,30 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return (
+        response ||
+        fetch(event.request)
+          .then((fetchResponse) => {
+            if (
+              !fetchResponse ||
+              fetchResponse.status !== 200 ||
+              fetchResponse.type !== "basic"
+            ) {
+              return fetchResponse;
+            }
+
+            const responseToCache = fetchResponse.clone();
+
+            caches.open(cacheName).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+
+            return fetchResponse;
+          })
+          .catch(() => {
+            return caches.match(offlineUrl);
+          })
+      );
     })
   );
 });
