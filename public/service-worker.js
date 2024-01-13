@@ -54,7 +54,8 @@ self.addEventListener("fetch", (event) => {
 
             return fetchResponse;
           })
-          .catch(() => {
+          .catch((fetchError) => {
+            console.error(`Fetch failed for ${event.request.url}:`, fetchError);
             return caches.match(offlineUrl);
           })
       );
