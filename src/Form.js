@@ -156,7 +156,7 @@ const MyForm = () => {
           <span className="error">{errors.country}</span>
         </label>
 
-        <button type="submit">Submit</button>
+        <button type="button">Submit</button>
       </form>
     </div>
   );
