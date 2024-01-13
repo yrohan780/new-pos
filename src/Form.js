@@ -73,7 +73,7 @@ const MyForm = () => {
     // If no validation errors, send data to API
     try {
       const response = await axios.post(
-        "http://192.168.1.18:5000/formdata",
+        "http://192.168.1.28:5000/formdata",
         formData
       );
       console.log("API Response:", response.data);
