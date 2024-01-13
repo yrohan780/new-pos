@@ -1,9 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./MyForm.css";
 
 const MyForm = () => {
   const [db, setDb] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
+
+  const syncData = useCallback(
+    async (formData) => {
+      try {
+        const response = await fetch(
+          "https://vedicastrologyforum.com/mt/sync.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+
+        const data = await response.json();
+
+        console.log("Data synced:", data);
+
+        const transaction = db.transaction(["offlineFormData"], "readwrite");
+        const objectStore = transaction.objectStore("offlineFormData");
+        objectStore.delete(formData.id);
+
+        console.log("Data removed from IndexedDB");
+      } catch (error) {
+        console.error("Error syncing data:", error);
+      }
+    },
+    [db]
+  );
 
   useEffect(() => {
     const initIndexedDB = async () => {
@@ -26,32 +56,28 @@ const MyForm = () => {
     initIndexedDB();
   }, []);
 
-  const syncData = async (formData) => {
-    try {
-      const response = await fetch(
-        "https://vedicastrologyforum.com/mt/sync.php",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const isOnline = navigator.onLine;
 
-      const data = await response.json();
+      if (isOnline && db) {
+        const transaction = db.transaction(["offlineFormData"], "readonly");
+        const objectStore = transaction.objectStore("offlineFormData");
+        const request = objectStore.openCursor();
 
-      console.log("Data synced:", data);
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
 
-      const transaction = db.transaction(["offlineFormData"], "readwrite");
-      const objectStore = transaction.objectStore("offlineFormData");
-      objectStore.delete(formData.id);
+          if (cursor) {
+            const formData = { id: cursor.value.id, ...cursor.value };
+            syncData(formData);
+          }
+        };
+      }
+    }, 5000);
 
-      console.log("Data removed from IndexedDB");
-    } catch (error) {
-      console.error("Error syncing data:", error);
-    }
-  };
+    return () => clearInterval(intervalId);
+  }, [db, syncData]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -74,29 +100,6 @@ const MyForm = () => {
       }
     };
   };
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const isOnline = navigator.onLine;
-
-      if (isOnline && db) {
-        const transaction = db.transaction(["offlineFormData"], "readonly");
-        const objectStore = transaction.objectStore("offlineFormData");
-        const request = objectStore.openCursor();
-
-        request.onsuccess = (event) => {
-          const cursor = event.target.result;
-
-          if (cursor) {
-            const formData = { id: cursor.value.id, ...cursor.value };
-            syncData(formData);
-          }
-        };
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [db]);
 
   return (
     <div className="form-container">
