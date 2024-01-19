@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import moment from "moment";
 
@@ -13,35 +13,30 @@ const Bill = () => {
   const [setButtonClicked] = useState(false);
 
   console.log(data);
-  const get_sub = () => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://192.168.1.22:5005/get_posdata "
-        );
-        setData(response.data);
-        setButtonClicked(true);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false);
-        setShowForm(true);
-      }
-    };
-
-    fetchData();
-    if (loading) {
-      return <p>Loading...</p>;
+  const get_sub = useCallback(async () => {
+    try {
+      const response = await axios.get("http://192.168.1.22:5005/get_posdata");
+      setData(response.data);
+      setButtonClicked(true);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+      setShowForm(true);
     }
+  }, [setButtonClicked]);
 
-    if (error) {
-      return <p>Error: {error.message}</p>;
-    }
-  };
-  console.log(get_sub);
   useEffect(() => {
     get_sub();
-  }, []);
+  }, [get_sub]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error.message}</p>;
+  }
 
   return (
     <div>
