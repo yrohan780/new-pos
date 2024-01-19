@@ -12,7 +12,7 @@ const Form = () => {
       if (flag_click === "0" && formDataArray.length > 0) {
         flag_click = "1";
         try {
-          await fetch("http://192.168.1.22:5005/post_posdata ", {
+          await fetch("http://192.168.1.22:5005/post_posdata", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
