@@ -1,35 +1,31 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./MyForm.css";
 import { Link } from "react-router-dom";
+import moment from "moment";
 let flag_click = "0";
 const Form = () => {
   const [db, setDb] = useState(null);
-  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", time: "" });
 
   const syncData = useCallback(
-    async (formData) => {
-      if (flag_click === "0") {
+    async (formDataArray) => {
+      if (flag_click === "0" && formDataArray.length > 0) {
         flag_click = "1";
-        console.log(formData);
         try {
-          await fetch("https://vedicastrologyforum.com/mt/sync.php", {
+          await fetch("http://192.168.1.22:5005/post_posdata ", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({ formDataArray }),
           });
-
-          // The 'response' variable is not used, so you can remove it
-          // const response = await response.json();
+          console.log(formDataArray);
 
           const transaction = db.transaction(["offlineFormData"], "readwrite");
           const objectStore = transaction.objectStore("offlineFormData");
           const clearRequest = objectStore.clear();
 
-          clearRequest.onsuccess = (event) => {
-            console.log("All data deleted successfully");
-          };
+          clearRequest.onsuccess = (event) => {};
           console.log("Data removed from IndexedDB");
           flag_click = "0";
         } catch (error) {
@@ -60,6 +56,11 @@ const Form = () => {
     };
 
     initIndexedDB();
+
+    setFormData((prevData) => ({
+      ...prevData,
+      time: moment().format("YYYY-MM-DDTHH:mm:ss"),
+    }));
   }, []);
 
   useEffect(() => {
@@ -70,13 +71,19 @@ const Form = () => {
         const transaction = db.transaction(["offlineFormData"], "readonly");
         const objectStore = transaction.objectStore("offlineFormData");
         const request = objectStore.openCursor();
+        const formDataArray = [];
 
         request.onsuccess = (event) => {
           const cursor = event.target.result;
-
           if (cursor) {
             const formData = { id: cursor.value.id, ...cursor.value };
-            syncData(formData);
+            formDataArray.push(formData);
+            cursor.continue();
+          } else {
+            // Cursor has reached the end, sync bulk data
+            if (formDataArray.length > 0) {
+              syncData(formDataArray);
+            }
           }
         };
       }
@@ -90,10 +97,13 @@ const Form = () => {
 
     const transaction = db.transaction(["offlineFormData"], "readwrite");
     const objectStore = transaction.objectStore("offlineFormData");
+    const currentTime = moment().format("YYYY-MM-DDTHH:mm:ss");
     const addRequest = objectStore.add({
       name: formData.name,
       email: formData.email,
+      time: currentTime,
     });
+    console.log("Time ", formData);
 
     addRequest.onsuccess = (event) => {
       const newFormData = { id: event.target.result, ...formData };
@@ -103,23 +113,57 @@ const Form = () => {
       if (isOnline) {
         syncData(newFormData);
       }
+      setFormData({
+        ...formData,
+        name: "",
+        email: "",
+        time: currentTime,
+      });
     };
-    setFormData({
-      name: "",
-      email: "",
-    });
   };
+  useEffect(() => {
+    const handleOnline = () => {
+      // Handle online state, e.g., sync data
+      console.log("Online now");
+    };
+
+    const handleOffline = () => {
+      // Handle offline state, e.g., store data locally
+      console.log("You are offline");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   return (
     <div className="formCOntianer">
       <nav className="navbar fixed-top navbar-dark bg-dark">
         <div className="container-md">
-          <Link className="navbar-brand" to="/">
+          <Link
+            className="navbar-brand"
+            style={{
+              backgroundColor: "#ed1c24",
+              padding: "0.2rem 1rem",
+              fontWeight: "700",
+            }}
+            to="/"
+          >
             Offline POS
           </Link>
-          <Link className="navbar-brand" to="/form">
-            Form
-          </Link>
+          <div className="d-flex gap-5">
+            <Link className="navbar-brand" to="/Bill">
+              Invoice
+            </Link>
+            <Link className="navbar-brand" to="/form">
+              Form
+            </Link>
+          </div>
         </div>
       </nav>
       <div className="form-container">
@@ -158,6 +202,14 @@ const Form = () => {
             placeholder="Enter Your Email"
           />
           <br />
+
+          <input
+            type="hidden"
+            id="time"
+            name="time"
+            value={formData.time}
+            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+          />
 
           <button
             data-aos="fade-right"

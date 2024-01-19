@@ -21,12 +21,25 @@ function Home() {
     <div className="homeCOntaienr">
       <nav className="navbar fixed-top navbar-dark bg-dark">
         <div className="container-md">
-          <Link className="navbar-brand" to="/">
+          <Link
+            className="navbar-brand"
+            style={{
+              backgroundColor: "#ed1c24",
+              padding: "0.2rem 1rem",
+              fontWeight: "700",
+            }}
+            to="/"
+          >
             Offline POS
           </Link>
-          <Link className="navbar-brand" to="/form">
-            Form
-          </Link>
+          <div className="d-flex gap-5">
+            <Link className="navbar-brand" to="/Bill">
+              Invoice
+            </Link>
+            <Link className="navbar-brand" to="/form">
+              Form
+            </Link>
+          </div>
         </div>
       </nav>
 
