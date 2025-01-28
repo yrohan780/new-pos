@@ -1,24 +1,24 @@
-name: GitHub Pages Deployment
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main  # Run workflow on pushes to the main branch
+      - main  # Trigger on push to the main branch
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository
-    - name: Checkout repository
+    # Step 1: Check out the code
+    - name: Checkout code
       uses: actions/checkout@v2
 
     # Step 2: Set up Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '20'  # Use Node.js version 20
+        node-version: 20  # Use Node.js version 20
 
     # Step 3: Install dependencies
     - name: Install dependencies
@@ -30,10 +30,7 @@ jobs:
 
     # Step 5: Deploy to GitHub Pages
     - name: Deploy to GitHub Pages
-      run: npm run deploy
-
-    # Step 6: Configure git for deployment
-    - name: Configure Git
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ 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 }}
+        publish_dir: ./build  # Directory containing the built files
